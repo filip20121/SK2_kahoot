@@ -1,0 +1,20 @@
+Quiz
+
+Quiz typu Kahoot, w którym użytkownik ma możliwość wybrania opcji 
+Utworz quiz lub Dolacz do quizu
+
+W Utworz quiz trzeba podac ilosc pytan, kolejno kazde pytanie z
+odpowiedziami oraz utworzyc kod dostepu. Osoba tworzaca quiz nie może wziac 
+w nim udzialu
+
+W Dolacz do quizu najpierw wpisuje sie kod dostepu, pozniej odpowiada 
+na kolejne pytania. Koncowo otrzymujemy wynik ostateczny.
+
+Serwer musi wiedziec kto z dolaczonych uzytkownikow dolaczyl do ktorego quizu
+i tylko tym osobom przesylac pytania. Serwer jest odpowiedzialny za wynik quizu,
+sprawdza poprawnosc odpowiedzi oraz zachowuje kolejnosc w jakiej odebral te 
+odpowiedzi. Od kolejnosc poprawnej odpowiedzi zalezy miejsce ktore uzytkownik
+otrzyma na koncu. 
+
+Mozna brac udzial w maksymalnie jednym quzie rownoczesnie (jeden uzytkownik
+w jednym quzie). Moze istniec kilka quizow rownoczesnie.
