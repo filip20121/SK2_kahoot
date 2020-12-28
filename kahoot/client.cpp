@@ -37,8 +37,10 @@ void CLient::startUp(){
 void CLient::connectBtnHit(){
     ui->connect->setEnabled(false);
     ui->connectQuestion->setEnabled(false);
+    ui->connectAnswer->setEnabled(false);
     ui->exitButton->setEnabled(false);
     ui->add->setEnabled(false);
+
     ui->quiz->append("<b>Connecting to " + ui->server->text() + ":" + ui->port->value() + "</b>");
     sock = new QTcpSocket(this);
         connTimeoutTimer = new QTimer(this);
@@ -91,7 +93,7 @@ void CLient::socketError(QTcpSocket::SocketError err){
         return;
     QMessageBox::critical(this, "Error", sock->errorString());
     ui->quiz->append("<b>Socket error: "+sock->errorString()+"</b>");
-
+    ui->connect->setEnabled(true);
 }
 
 
@@ -182,6 +184,7 @@ void CLient::joinToTheGame(){
 
     ui->join_game->setEnabled(false);
     ui->connectCreate->setEnabled(false);
+    ui->connectAnswer->setEnabled(true);
 
     ui->quiz->append("Dołączyłeś do gry "+QString::number(code));
 
