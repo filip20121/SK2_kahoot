@@ -28,12 +28,24 @@ int servFd;
 
 unordered_set<int> clientFds;
 void ctrl_c(int);
-void sendToAllBut(int fd, char * buffer, int count);
+void sendQuestion(int fd, char * buffer, int count);
 uint16_t readPort(char * txt);
 void setReuseAddr(int sock);
 void recive(int clientFd);
 
+struct Quiz{
+        int AccessCode;
+        string questionTxt[10];
+        string answer[10];
+        int capacity;
+    } quiz[10];
+
 int main(int argc, char ** argv){
+    quiz[0].AccessCode=0;
+    quiz[0].questionTxt[0]="ILe to jest 2+2? \nA. 4 \t B. 5 \t C.3 \t D. 6";
+    quiz[0].answer[0]="a";
+    quiz[0].capacity = 1;
+    
 	// get and validate port number
 	if(argc != 2) error(1, 0, "Need 1 arg (port)");
 	auto port = readPort(argv[1]);
@@ -102,30 +114,58 @@ void ctrl_c(int){
 	exit(0);
 }
 
-void sendToAllBut(int fd, char* buffer, int count){
-	int res;
-	string s = to_string(fd) + ": " + buffer + "\n";
-	char temp[s.length()];
-	strcpy(temp, s.c_str());
-	count += (ceil(fd/10) + 3);
+void sendQuestion(int fd, string & question, int count){
+	int res;        
+        string q = question + "\n";
+        char temp[q.length()];
+        strcpy(temp, q.c_str());
+        count += (ceil(fd/10) + 3);
+        
+        decltype(clientFds) bad;
+        
+        for(int clientFd : clientFds){
+            if(clientFd == fd) continue;
+            int name = write(clientFd, &fd, sizeof(int));
+            mtx.lock();
+            res = write(clientFd, temp, count);
+            mtx.unlock();
+            if(res!=count)
+                bad.insert(clientFd);
+        }
+        for(int clientFd : bad){
+            printf("removing %d\n", clientFd);
+            clientFds.erase(clientFd);
+            close(clientFd);
+        }
 
-	decltype(clientFds) bad;
-	
-	for(int clientFd : clientFds){
-		if(clientFd == fd) continue;
-		int name = write(clientFd, &fd, sizeof(int));
-		mtx.lock();
-		res = write(clientFd, temp, count);
-		mtx.unlock();
-		if(res!=count)
-			bad.insert(clientFd);
-	}
-	for(int clientFd : bad){
-		printf("removing %d\n", clientFd);
-		clientFds.erase(clientFd);
-		close(clientFd);
-	}
-	
+}
+
+void sendResult(int fd, int result, int count){
+	int res;
+        
+        string q = "Your score is: " + to_string(result) + "\n";
+        char temp[q.length()];
+        strcpy(temp, q.c_str());
+        count += (ceil(fd/10) + 3);
+        
+        
+        decltype(clientFds) bad;
+        
+        for(int clientFd : clientFds){
+            if(clientFd == fd) continue;
+            int name = write(clientFd, &fd, sizeof(int));
+            mtx.lock();
+            res = write(clientFd, temp, count);
+            mtx.unlock();
+            if(res!=count)
+                bad.insert(clientFd);
+        }
+        for(int clientFd : bad){
+            printf("removing %d\n", clientFd);
+            clientFds.erase(clientFd);
+            close(clientFd);
+        }
+
 }
 
 void recive(int clientFd)
@@ -135,6 +175,25 @@ void recive(int clientFd)
 		char buffer[255];
 		int count = read(clientFd, buffer, 255);
 		printf("%s\n", buffer);
+        
+        //wczytaj kod dostępu
+        int acces = atoi(buffer);
+        int clients_answers=0;
+        
+        //wyslij pytania i wczytaj odpowiedzi
+        for(int i=0; i< quiz[acces].capacity; i++){
+            sendQuestion(clientFd, quiz[acces].questionTxt[i], count);
+            
+            if(quiz[acces].answer[i] == buffer){
+            
+                clients_answers++;
+            }
+            
+        }
+        
+        //wyślij wynik
+        sendResult(clientFd, clients_answers, count);
+        
 		if(count < 1) {
 			printf("removing %d\n", clientFd);
 			clientFds.erase(clientFd);
@@ -142,7 +201,7 @@ void recive(int clientFd)
 			break;
 		}
 		else {
-			sendToAllBut(clientFd, buffer, count);
+			;
 		}
 	}
 }
