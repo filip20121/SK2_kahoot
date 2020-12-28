@@ -60,23 +60,11 @@ void CLient::connectBtnHit(){
     connect(sock, (void(QTcpSocket::*)(QTcpSocket::SocketError)) &QTcpSocket::error, this, &CLient::socketError);
     connect(sock, &QTcpSocket::readyRead, this, &CLient::dataReceived);
 
-    sock -> connectToHost(ui->server->text(), ui->port->value() );
+    sock -> connectToHost(ui->server->text(), ui->port->value());
     connTimeoutTimer->start(3000);
 }
-void CLient::dataReceived(){
-   //  mutex.lock();
-    QByteArray ba = sock->readAll();
-    ui->quiz->append(QString::fromUtf8(ba).trimmed());
-    ui->quiz->setAlignment(Qt::AlignLeft);
 
-    if(QString::fromUtf8(ba).trimmed() == "end"){
-       ui->exitButton->setEnabled(true);
-    }
-     //mutex.unlock();
-
-}
 void CLient::socketConnected(){
-
     connTimeoutTimer->stop();
     connTimeoutTimer->deleteLater();
     ui->quiz->append("<b>Connected</b>");
@@ -85,7 +73,7 @@ void CLient::socketConnected(){
 
 void CLient::socketDisconnected(){
     ui->quiz->append("<b>Disconnected</b>");
-    ui->connect->setEnabled(true);
+    startUp();
 }
 
 void CLient::socketError(QTcpSocket::SocketError err){
@@ -93,13 +81,33 @@ void CLient::socketError(QTcpSocket::SocketError err){
         return;
     QMessageBox::critical(this, "Error", sock->errorString());
     ui->quiz->append("<b>Socket error: "+sock->errorString()+"</b>");
-    ui->connect->setEnabled(true);
+    startUp();
 }
 
+/*
+ * function dataReceived()
+ *
+ * is responsible for reading data from the server
+ * data is like question with posssible answers,
+ *              your score,
+*/
+void CLient::dataReceived(){
+    QByteArray ba = sock->readAll();
+    ui->quiz->append(QString::fromUtf8(ba).trimmed());
+    ui->quiz->setAlignment(Qt::AlignLeft);
 
-//popraw
+    if(QString::fromUtf8(ba).trimmed() == "end"){
+       ui->exitButton->setEnabled(true);
+    }
+
+}
+/*
+ * function sendBtnHit()
+ *
+ * is responsible for sending to the server the user's answer for question
+*/
 void CLient::sendBtnHit(){
-  //  mutex.lock();
+
       QString txt;
 
      if(ui->a->isChecked() ){
@@ -124,18 +132,18 @@ void CLient::sendBtnHit(){
      }
      //
      sock->write((txt+'\n').toUtf8());
-    // ui->quiz->clear();
      ui->quiz->setFocus();
-  //  mutex.unlock();
 }
-/*uzupełnij
 
-???????????????????????????????
-W Utworz quiz trzeba podac kolejno kazde pytanie z
-odpowiedziami oraz utworzyc kod dostepu. Osoba tworzaca quiz nie może wziac
-w nim udzialu*/
+/*
+ *function createQuiz()
+ * creats the quiz
+ * sends the acces code to the server
+ *
+ * capacity stores the number of question in this quiz
+ * correct_answer[] stores the correct answer for each question
+*/
 void CLient::createQuiz(){
-
     //disable button to create a new quiz
     ui->code->setEnabled(false);
     ui->numOfQuest->setEnabled(false);
@@ -151,11 +159,21 @@ void CLient::createQuiz(){
     QString question[quiz1.capacity];
     QString correct_answers[quiz1.capacity];
 
+   // sock->write((quiz1.AccessCode).toUtf8());
+
     ui->join_game->setEnabled(false);
     ui->connectAnswer->setEnabled(false);
     ui->exitButton->setEnabled(true);
 }
-//uzupełnij
+
+/*
+ *function addQuestion()
+ * adds the question to the quiz structure
+ * and sends it to the server
+ *
+ * capacity stores the number of question in this quiz
+ * questionTxt[] stores the text of each question
+*/
 void CLient::addQuestion(){
 
     for(int i=0; i<quiz1.capacity; i++){
@@ -165,9 +183,7 @@ void CLient::addQuestion(){
         ui->quiz->append(quiz1.questionTxt[0]);
 
         ui->quiz->clear();
-        //sock->write((quiz1.questionTxt[i]+'\n').toUtf8());
         sock->write((ui->question->text().trimmed()+'\n').toUtf8());
-        //sock->write((quiz1.answer[i]+'\n').toUtf8());
         sock->write((ui->correct->text().trimmed()+'\n').toUtf8());
     }
     ui->question->clear();

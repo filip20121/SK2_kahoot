@@ -114,48 +114,21 @@ void ctrl_c(int){
 	exit(0);
 }
 
-void sendQuestion(int fd, string & question, int count){
+void sendQuestion(int fd, string buff /*string & question*/, int count){
 	int res;        
-        string q = question + "\n";
+        string q = buff + "\n";
         char temp[q.length()];
         strcpy(temp, q.c_str());
+           
         count += (ceil(fd/10) + 3);
         
         decltype(clientFds) bad;
-        
-        for(int clientFd : clientFds){
-            if(clientFd == fd) continue;
-            int name = write(clientFd, &fd, sizeof(int));
-            mtx.lock();
-            res = write(clientFd, temp, count);
-            mtx.unlock();
-            if(res!=count)
-                bad.insert(clientFd);
-        }
-        for(int clientFd : bad){
-            printf("removing %d\n", clientFd);
-            clientFds.erase(clientFd);
-            close(clientFd);
-        }
 
-}
-
-void sendResult(int fd, int result, int count){
-	int res;
-        
-        string q = "Your score is: " + to_string(result) + "\n";
-        char temp[q.length()];
-        strcpy(temp, q.c_str());
-        count += (ceil(fd/10) + 3);
-        
-        
-        decltype(clientFds) bad;
-        
         for(int clientFd : clientFds){
-            if(clientFd == fd) continue;
-            int name = write(clientFd, &fd, sizeof(int));
+           // int name = write(clientFd, &fd, sizeof(int));
             mtx.lock();
-            res = write(clientFd, temp, count);
+            res = write(clientFd, temp, sizeof(temp)+1);
+           
             mtx.unlock();
             if(res!=count)
                 bad.insert(clientFd);
@@ -180,9 +153,11 @@ void recive(int clientFd)
         int acces = atoi(buffer);
         int clients_answers=0;
         
+         
         //wyslij pytania i wczytaj odpowiedzi
         for(int i=0; i< quiz[acces].capacity; i++){
-            sendQuestion(clientFd, quiz[acces].questionTxt[i], count);
+            string quest = quiz[acces].questionTxt[i];
+            sendQuestion(clientFd, quest, count);
             
             if(quiz[acces].answer[i] == buffer){
             
@@ -192,7 +167,7 @@ void recive(int clientFd)
         }
         
         //wyślij wynik
-        sendResult(clientFd, clients_answers, count);
+        sendQuestion(clientFd, ("Twój wynik: "+to_string(clients_answers)), count);
         
 		if(count < 1) {
 			printf("removing %d\n", clientFd);
