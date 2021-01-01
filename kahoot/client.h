@@ -21,7 +21,7 @@ public:
 
     struct Quiz
     {
-        QString AccessCode;
+        int AccessCode;
         QString questionTxt[10];
         QString answer[10];
         int capacity;

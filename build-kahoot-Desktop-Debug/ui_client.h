@@ -167,6 +167,7 @@ public:
         port->setMinimumSize(QSize(111, 31));
         port->setMinimum(0);
         port->setMaximum(9999);
+        port->setValue(2020);
         join_game = new QGroupBox(connectMenu);
         join_game->setObjectName(QString::fromUtf8("join_game"));
         join_game->setGeometry(QRect(10, 120, 671, 71));

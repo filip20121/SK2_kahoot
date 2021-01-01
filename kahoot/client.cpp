@@ -31,10 +31,12 @@ void CLient::startUp(){
     ui->join_game->setEnabled(true);
     ui->connectCreate->setEnabled(true);
     ui->connectQuestion->setEnabled(true);
+    ui->quiz->clear();
 
 }
 
 void CLient::connectBtnHit(){
+    ui->quiz->clear();
     ui->connect->setEnabled(false);
     ui->connectQuestion->setEnabled(false);
     ui->connectAnswer->setEnabled(false);
@@ -73,6 +75,7 @@ void CLient::socketConnected(){
 
 void CLient::socketDisconnected(){
     ui->quiz->append("<b>Disconnected</b>");
+    ui->connect->setEnabled(true);
     startUp();
 }
 
@@ -81,6 +84,7 @@ void CLient::socketError(QTcpSocket::SocketError err){
         return;
     QMessageBox::critical(this, "Error", sock->errorString());
     ui->quiz->append("<b>Socket error: "+sock->errorString()+"</b>");
+    ui->connect->setEnabled(true);
     startUp();
 }
 
@@ -93,11 +97,31 @@ void CLient::socketError(QTcpSocket::SocketError err){
 */
 void CLient::dataReceived(){
     QByteArray ba = sock->readAll();
-    ui->quiz->append(QString::fromUtf8(ba).trimmed());
-    ui->quiz->setAlignment(Qt::AlignLeft);
 
-    if(QString::fromUtf8(ba).trimmed() == "end"){
-       ui->exitButton->setEnabled(true);
+     if(QString::fromUtf8(ba)[0] == "!"){
+        //if quiz ended
+        if(QString::fromUtf8(ba)[1] == "#")
+        {
+            ui->exitButton->setEnabled(true);
+            ui->quiz->append(QString::fromUtf8(ba).trimmed());
+            ui->quiz->setAlignment(Qt::AlignLeft);
+
+        }
+        //if code is incorrect
+        if(QString::fromUtf8(ba)[1] == "*")
+        {
+            ui->join_game->setEnabled(true);
+            ui->joinButton->setEnabled(true);
+            ui->connectAnswer->setEnabled(false);
+            ui->quiz->append("Niepoprawny kod dostępu\n");
+            ui->quiz->setAlignment(Qt::AlignLeft);
+        }
+
+     }
+   else
+    {
+        ui->quiz->append(QString::fromUtf8(ba).trimmed());
+        ui->quiz->setAlignment(Qt::AlignLeft);
     }
 
 }
@@ -130,8 +154,8 @@ void CLient::sendBtnHit(){
          ui->d->setChecked(false);
          txt = "d";
      }
-     //
-     sock->write((txt+'\n').toUtf8());
+
+     sock->write(("?"+txt+'*').toUtf8());
      ui->quiz->setFocus();
 }
 
@@ -156,10 +180,11 @@ void CLient::createQuiz(){
     //data needed to create quiz
     quiz1.AccessCode = ui->code->value();
     quiz1.capacity = ui->numOfQuest->value();
-    QString question[quiz1.capacity];
-    QString correct_answers[quiz1.capacity];
 
-   // sock->write((quiz1.AccessCode).toUtf8());
+    sock->write("#");
+    sock->write(QString::number(quiz1.AccessCode).toUtf8());
+    sock->write("*");
+    sock->write(QString::number(quiz1.capacity).toUtf8());
 
     ui->join_game->setEnabled(false);
     ui->connectAnswer->setEnabled(false);
@@ -184,10 +209,13 @@ void CLient::addQuestion(){
 
         ui->quiz->clear();
         sock->write((ui->question->text().trimmed()+'\n').toUtf8());
-        sock->write((ui->correct->text().trimmed()+'\n').toUtf8());
+        sock->write("*");
+        sock->write((ui->correct->text().trimmed()).toUtf8());
+        ui->question->clear();
+        ui->correct->clear();
     }
-    ui->question->clear();
-    ui->correct->clear();
+
+    startUp();
 }
 /*
  * Funkcja join_game dołączająca klienta do gry
@@ -202,8 +230,10 @@ void CLient::joinToTheGame(){
     ui->connectCreate->setEnabled(false);
     ui->connectAnswer->setEnabled(true);
 
-    ui->quiz->append("Dołączyłeś do gry "+QString::number(code));
+    //ui->quiz->append("Dołączyłeś do gry "+QString::number(code));
 
+    sock->write("&");
     sock->write(QString::number(code).toUtf8());
+    sock->write("*");
     dataReceived();
 }
