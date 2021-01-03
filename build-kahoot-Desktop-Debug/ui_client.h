@@ -64,13 +64,13 @@ public:
     {
         if (CLient->objectName().isEmpty())
             CLient->setObjectName(QString::fromUtf8("CLient"));
-        CLient->resize(800, 689);
+        CLient->resize(711, 689);
         quiz = new QTextEdit(CLient);
         quiz->setObjectName(QString::fromUtf8("quiz"));
-        quiz->setGeometry(QRect(20, 480, 681, 121));
+        quiz->setGeometry(QRect(10, 480, 691, 121));
         connectAnswer = new QGroupBox(CLient);
         connectAnswer->setObjectName(QString::fromUtf8("connectAnswer"));
-        connectAnswer->setGeometry(QRect(30, 610, 311, 71));
+        connectAnswer->setGeometry(QRect(10, 610, 311, 71));
         send = new QPushButton(connectAnswer);
         send->setObjectName(QString::fromUtf8("send"));
         send->setGeometry(QRect(200, 30, 89, 25));
@@ -130,7 +130,7 @@ public:
         label_6->setGeometry(QRect(10, 30, 161, 17));
         connectQuestion = new QGroupBox(connectCreate);
         connectQuestion->setObjectName(QString::fromUtf8("connectQuestion"));
-        connectQuestion->setGeometry(QRect(10, 100, 671, 141));
+        connectQuestion->setGeometry(QRect(10, 100, 651, 141));
         add = new QPushButton(connectQuestion);
         add->setObjectName(QString::fromUtf8("add"));
         add->setGeometry(QRect(550, 100, 91, 31));
