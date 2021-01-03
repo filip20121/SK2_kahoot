@@ -49,18 +49,19 @@ struct Quiz{
         string answer[10];
         int capacity;
         int authorFd;
-    };//quiz[0];
+    };
 
 /*
  *  lastQuiz stores actual number of quizes
+ *  ptr_tab stores pointers to quizes
  */
 int lastQuiz = 1;
-Quiz * ptr_tab[10];
+Quiz * ptr_tab[2];
 
 int main(int argc, char ** argv){
     
     //----------        trail quiz            ---------------//
-    Quiz * quiz = (Quiz* ) malloc(1*sizeof(Quiz));
+    Quiz * quiz = (Quiz* ) malloc(2*sizeof(Quiz));
     
     ptr_tab[0] = quiz;
     
@@ -377,9 +378,10 @@ void recive(int clientFd)
             else if(sign == '#'){
                
                 //count = read(clientFd, buffer, 255); 
+                //ptr_tab = (Quiz *) malloc(sizeof(Quiz));
                 Quiz * quiz1 = (Quiz *) malloc(sizeof(Quiz));
+                ptr_tab[lastQuiz+1] = new Quiz;
                 ptr_tab[lastQuiz+1] = quiz1;
-               // struct Quiz quiz[lastQuiz+1];
                 
                 ptr_tab[lastQuiz+1]->authorFd = clientFd;
  
