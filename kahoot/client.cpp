@@ -1,4 +1,4 @@
-#include "client.h"
+﻿#include "client.h"
 #include "ui_client.h"
 
 #include <QMessageBox>
@@ -9,38 +9,44 @@
 
 QMutex mutex;
 
-CLient::CLient(QWidget *parent): QWidget(parent), ui(new Ui::CLient){
+Client::Client(QWidget *parent): QWidget(parent), ui(new Ui::Client){
     ui->setupUi(this);
 
-    connect(ui->connectButton, &QPushButton::clicked, this, &CLient::connectBtnHit);
+    connect(ui->connectButton, &QPushButton::clicked, this, &Client::connectBtnHit);
     connect(ui->server, &QLineEdit::returnPressed, ui->connectButton, &QPushButton::click);
-    connect(ui->send, &QPushButton::clicked, this, &CLient::sendBtnHit);
-    connect(ui->create, &QPushButton::clicked, this, &CLient::createQuiz);
-    connect(ui->add, &QPushButton::clicked, this, &CLient::addQuestion);
-    connect(ui->exitButton, &QPushButton::clicked, this, &CLient::startUp);
-    connect(ui->joinButton, &QPushButton::clicked, this, &CLient::joinToTheGame);
+    connect(ui->send, &QPushButton::clicked, this, &Client::sendBtnHit);
+    connect(ui->create, &QPushButton::clicked, this, &Client::createQuiz);
+    connect(ui->add, &QPushButton::clicked, this, &Client::addQuestion);
+    connect(ui->undoButton, &QPushButton::clicked, this, &Client::undoSetDisable);
+    connect(ui->joinButton, &QPushButton::clicked, this, &Client::joinToTheGame);
+    connect(ui->startButton, &QPushButton::clicked, this, &Client::startTheGame);
 }
 
-CLient::~CLient(){
+Client::~Client(){
     sock -> close();
     delete ui;
 }
-void CLient::startUp(){
+void Client::undoSetDisable(){
 
     ui->connectMenu->setEnabled(true);
     ui->join_game->setEnabled(true);
     ui->connectCreate->setEnabled(true);
+    ui->create->setEnabled(true);
+    ui->numOfQuest->setEnabled(true);
+    ui->code->setEnabled(true);
     ui->connectQuestion->setEnabled(true);
+    ui->start_game->setEnabled(true);
+    ui->startButton->setEnabled(true);
     ui->quiz->clear();
 
 }
 
-void CLient::connectBtnHit(){
+void Client::connectBtnHit(){
     ui->quiz->clear();
     ui->connect->setEnabled(false);
     ui->connectQuestion->setEnabled(false);
     ui->connectAnswer->setEnabled(false);
-    ui->exitButton->setEnabled(false);
+    ui->undoButton->setEnabled(false);
     ui->add->setEnabled(false);
 
     ui->quiz->append("<b>Connecting to " + ui->server->text() + ":" + ui->port->value() + "</b>");
@@ -57,35 +63,35 @@ void CLient::connectBtnHit(){
             QMessageBox::critical(this, "Error", "Connect timed out");
         });
 
-    connect(sock, &QTcpSocket::connected, this, &CLient::socketConnected);
-    connect(sock, &QTcpSocket::disconnected, this, &CLient::socketDisconnected);
-    connect(sock, (void(QTcpSocket::*)(QTcpSocket::SocketError)) &QTcpSocket::error, this, &CLient::socketError);
-    connect(sock, &QTcpSocket::readyRead, this, &CLient::dataReceived);
+    connect(sock, &QTcpSocket::connected, this, &Client::socketConnected);
+    connect(sock, &QTcpSocket::disconnected, this, &Client::socketDisconnected);
+    connect(sock, (void(QTcpSocket::*)(QTcpSocket::SocketError)) &QTcpSocket::error, this, &Client::socketError);
+    connect(sock, &QTcpSocket::readyRead, this, &Client::dataReceived);
 
     sock -> connectToHost(ui->server->text(), ui->port->value());
     connTimeoutTimer->start(3000);
 }
 
-void CLient::socketConnected(){
+void Client::socketConnected(){
     connTimeoutTimer->stop();
     connTimeoutTimer->deleteLater();
     ui->quiz->append("<b>Connected</b>");
 
 }
 
-void CLient::socketDisconnected(){
+void Client::socketDisconnected(){
     ui->quiz->append("<b>Disconnected</b>");
     ui->connect->setEnabled(true);
-    startUp();
+    undoSetDisable();
 }
 
-void CLient::socketError(QTcpSocket::SocketError err){
+void Client::socketError(QTcpSocket::SocketError err){
     if(err == QTcpSocket::RemoteHostClosedError)
         return;
     QMessageBox::critical(this, "Error", sock->errorString());
     ui->quiz->append("<b>Socket error: "+sock->errorString()+"</b>");
     ui->connect->setEnabled(true);
-    startUp();
+    undoSetDisable();
 }
 
 /*
@@ -95,26 +101,35 @@ void CLient::socketError(QTcpSocket::SocketError err){
  * data is like question with posssible answers,
  *              your score,
 */
-void CLient::dataReceived(){
+void Client::dataReceived(){
     QByteArray ba = sock->readAll();
 
      if(QString::fromUtf8(ba)[0] == "!"){
         //if quiz ended
         if(QString::fromUtf8(ba)[1] == "#")
         {
-            ui->exitButton->setEnabled(true);
-            ui->quiz->append(QString::fromUtf8(ba).trimmed());
+            ui->undoButton->setEnabled(true);
+            ui->quiz->append("Quiz się zakończył.\n");
             ui->quiz->setAlignment(Qt::AlignLeft);
 
         }
-        //if code is incorrect
+        //if code is incorrect whlie joining
         if(QString::fromUtf8(ba)[1] == "*")
         {
             ui->join_game->setEnabled(true);
             ui->joinButton->setEnabled(true);
             ui->connectAnswer->setEnabled(false);
-            ui->quiz->append("Niepoprawny kod dostępu\n");
+            ui->quiz->append("Niepoprawny kod dostępu.\n");
             ui->quiz->setAlignment(Qt::AlignLeft);
+        }
+        //if code is already used while creating
+        if(QString::fromUtf8(ba)[1] == "?"){
+            ui->quiz->append("Podany kod jest już zajęty. Podaj inny.\n");
+            ui->connectCreate->setEnabled(true);
+            ui->create->setEnabled(true);
+            ui->code->setEnabled(true);
+            ui->numOfQuest->setEnabled(true);
+            ui->connectQuestion->setEnabled(false);
         }
 
      }
@@ -122,6 +137,7 @@ void CLient::dataReceived(){
     {
         ui->quiz->append(QString::fromUtf8(ba).trimmed());
         ui->quiz->setAlignment(Qt::AlignLeft);
+        ui->undoButton->setEnabled(true);
     }
 
 }
@@ -130,7 +146,7 @@ void CLient::dataReceived(){
  *
  * is responsible for sending to the server the user's answer for question
 */
-void CLient::sendBtnHit(){
+void Client::sendBtnHit(){
 
       QString txt;
 
@@ -155,7 +171,7 @@ void CLient::sendBtnHit(){
          txt = "d";
      }
 
-     sock->write(("?"+txt+'*').toUtf8());
+     sock->write(("?"+txt).toUtf8());
      ui->quiz->setFocus();
 }
 
@@ -167,7 +183,7 @@ void CLient::sendBtnHit(){
  * capacity stores the number of question in this quiz
  * correct_answer[] stores the correct answer for each question
 */
-void CLient::createQuiz(){
+void Client::createQuiz(){
     //disable button to create a new quiz
     ui->code->setEnabled(false);
     ui->numOfQuest->setEnabled(false);
@@ -183,12 +199,13 @@ void CLient::createQuiz(){
 
     sock->write("#");
     sock->write(QString::number(quiz1.AccessCode).toUtf8());
-    sock->write("*");
+    sock->write("#");
     sock->write(QString::number(quiz1.capacity).toUtf8());
 
-    ui->join_game->setEnabled(false);
     ui->connectAnswer->setEnabled(false);
-    ui->exitButton->setEnabled(true);
+    ui->undoButton->setEnabled(true);
+    ui->start_game->setEnabled(true);
+    ui->startButton->setEnabled(true);
 }
 
 /*
@@ -199,7 +216,7 @@ void CLient::createQuiz(){
  * capacity stores the number of question in this quiz
  * questionTxt[] stores the text of each question
 */
-void CLient::addQuestion(){
+void Client::addQuestion(){
 
     for(int i=0; i<quiz1.capacity; i++){
 
@@ -208,20 +225,21 @@ void CLient::addQuestion(){
         ui->quiz->append(quiz1.questionTxt[0]);
 
         ui->quiz->clear();
-        sock->write((ui->question->text().trimmed()+'\n').toUtf8());
+        sock->write((ui->question->text().trimmed()).toUtf8());
         sock->write("*");
         sock->write((ui->correct->text().trimmed()).toUtf8());
+        sock->write("*");
         ui->question->clear();
         ui->correct->clear();
     }
 
-    startUp();
+    undoSetDisable();
 }
 /*
  * Funkcja join_game dołączająca klienta do gry
  * wysyła żądanie o pytania z quizu z kodem dostępu join_code
  */
-void CLient::joinToTheGame(){
+void Client::joinToTheGame(){
 
     ui->quiz->clear();
     int code = ui->join_code->value();
@@ -234,6 +252,26 @@ void CLient::joinToTheGame(){
 
     sock->write("&");
     sock->write(QString::number(code).toUtf8());
-    sock->write("*");
+    sock->write("&");
+    dataReceived();
+}
+
+/*
+ * Funkcja join_game dołączająca klienta do gry
+ * wysyła żądanie o pytania z quizu z kodem dostępu join_code
+ */
+void Client::startTheGame(){
+
+    ui->quiz->clear();
+    int code = ui->start_code->value();
+    ui->start_game->setEnabled(false);
+    ui->connectCreate->setEnabled(false);
+    ui->connectAnswer->setEnabled(false);
+
+    ui->quiz->append("Rozpocząłeś quiz "+QString::number(code));
+
+    sock->write("@");
+    sock->write(QString::number(code).toUtf8());
+    ui->startButton->setEnabled(false);
     dataReceived();
 }

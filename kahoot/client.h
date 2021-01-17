@@ -8,16 +8,16 @@
 #include <QThread>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class CLient; }
+namespace Ui { class Client; }
 QT_END_NAMESPACE
 
-class CLient : public QWidget
+class Client : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit CLient(QWidget *parent = 0);
-    ~CLient();
+    explicit Client(QWidget *parent = 0);
+    ~Client();
 
     struct Quiz
     {
@@ -44,11 +44,12 @@ protected:
     void createQuiz();
     void addQuestion();
     void joinToTheGame();
-    void startUp();
+    void undoSetDisable();
+    void startTheGame();
     /* TODO: Stworzyć nagłówki pozostałych funkcji obsługujących zdarzenie na gnieździe */
 
 private:
-    Ui::CLient *ui;
+    Ui::Client *ui;
 
 
 signals:
@@ -64,11 +65,11 @@ class Sender : public QObject
 
  //protected:
    Sender() {
-        CLient *senderCLient = new CLient;
-                senderCLient->moveToThread(&sender);
-                connect(&sender, &QThread::finished, senderCLient, &QObject::deleteLater);
-                connect(this, &Sender::operate, senderCLient, &CLient::sendBtnHit);
-      //          connect(senderCLient, &CLient::resultReady, this, &Sender::handleResults);
+        Client *senderClient = new Client;
+                senderClient->moveToThread(&sender);
+                connect(&sender, &QThread::finished, senderClient, &QObject::deleteLater);
+                connect(this, &Sender::operate, senderClient, &Client::sendBtnHit);
+      //          connect(senderClient, &Client::resultReady, this, &Sender::handleResults);
                 sender.start();
     }
 
@@ -93,11 +94,11 @@ class Listener : public QObject
 
  //protected:
    Listener() {
-        CLient *listener = new CLient;
+        Client *listener = new Client;
                 listener->moveToThread(&listen);
                 connect(&listen, &QThread::finished, listener, &QObject::deleteLater);
-                connect(this, &Listener::operate, listener, &CLient::dataReceived);
-          //      connect(listener, &CLient::resultReady, this, &Listener::handleResults);
+                connect(this, &Listener::operate, listener, &Client::dataReceived);
+          //      connect(listener, &Client::resultReady, this, &Listener::handleResults);
                 listen.start();
     }
 

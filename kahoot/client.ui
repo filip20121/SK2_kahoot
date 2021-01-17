@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CLient</class>
- <widget class="QWidget" name="CLient">
+ <class>Client</class>
+ <widget class="QWidget" name="Client">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>711</width>
+    <width>936</width>
     <height>689</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>CLient</string>
+   <string>KahootClient</string>
   </property>
   <widget class="QTextEdit" name="quiz">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>480</y>
-     <width>691</width>
+     <width>861</width>
      <height>121</height>
     </rect>
    </property>
@@ -94,7 +94,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>691</width>
+     <width>911</width>
      <height>461</height>
     </rect>
    </property>
@@ -106,7 +106,7 @@
      <rect>
       <x>10</x>
       <y>200</y>
-      <width>671</width>
+      <width>881</width>
       <height>251</height>
      </rect>
     </property>
@@ -116,7 +116,7 @@
     <widget class="QPushButton" name="create">
      <property name="geometry">
       <rect>
-       <x>560</x>
+       <x>760</x>
        <y>60</y>
        <width>91</width>
        <height>31</height>
@@ -210,7 +210,7 @@
       <rect>
        <x>10</x>
        <y>100</y>
-       <width>651</width>
+       <width>861</width>
        <height>141</height>
       </rect>
      </property>
@@ -220,7 +220,7 @@
      <widget class="QPushButton" name="add">
       <property name="geometry">
        <rect>
-        <x>550</x>
+        <x>750</x>
         <y>100</y>
         <width>91</width>
         <height>31</height>
@@ -235,7 +235,7 @@
        <rect>
         <x>10</x>
         <y>50</y>
-        <width>631</width>
+        <width>831</width>
         <height>41</height>
        </rect>
       </property>
@@ -387,7 +387,7 @@
      </rect>
     </property>
     <property name="title">
-     <string>Join to the game</string>
+     <string>Join to  the game</string>
     </property>
     <widget class="QPushButton" name="joinButton">
      <property name="geometry">
@@ -441,18 +441,82 @@
      </property>
     </widget>
    </widget>
+   <widget class="QGroupBox" name="start_game">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>30</y>
+      <width>201</width>
+      <height>161</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Start the game</string>
+    </property>
+    <widget class="QLabel" name="label_10">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>71</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Code</string>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="start_code">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>30</y>
+       <width>111</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>111</width>
+       <height>31</height>
+      </size>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="minimum">
+      <number>0</number>
+     </property>
+     <property name="maximum">
+      <number>9999</number>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="startButton">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>80</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Start</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
-  <widget class="QPushButton" name="exitButton">
+  <widget class="QPushButton" name="undoButton">
    <property name="geometry">
     <rect>
-     <x>600</x>
+     <x>780</x>
      <y>660</y>
      <width>89</width>
      <height>25</height>
     </rect>
    </property>
    <property name="text">
-    <string>Exit</string>
+    <string>Undo</string>
    </property>
   </widget>
  </widget>
