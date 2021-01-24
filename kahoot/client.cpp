@@ -37,6 +37,7 @@ void Client::undoSetDisable(){
     ui->connectQuestion->setEnabled(true);
     ui->start_game->setEnabled(true);
     ui->startButton->setEnabled(true);
+    ui->time->setEnabled(true);
     ui->quiz->clear();
 
 }
@@ -148,7 +149,7 @@ void Client::dataReceived(){
 */
 void Client::sendBtnHit(){
 
-      QString txt;
+      QString txt="";
 
      if(ui->a->isChecked() ){
        ui->quiz->append("Zaznaczyłeś odpowiedź:<b> a</b>");
@@ -187,25 +188,34 @@ void Client::createQuiz(){
     //disable button to create a new quiz
     ui->code->setEnabled(false);
     ui->numOfQuest->setEnabled(false);
+    ui->time->setEnabled(false);
     ui->create->setEnabled(false);
+    ui->start_game->setEnabled(false);
 
     //enable the add_question button and section with question
     ui->add->setEnabled(true);
     ui->connectQuestion->setEnabled(true);
+    numOfQuestions = ui->numOfQuest->value();
+    code = ui->code->value();
+    time = ui->time->value();
 
     //data needed to create quiz
-    quiz1.AccessCode = ui->code->value();
-    quiz1.capacity = ui->numOfQuest->value();
-
     sock->write("#");
-    sock->write(QString::number(quiz1.AccessCode).toUtf8());
+    sock->write(QString::number(code).toUtf8());
     sock->write("#");
-    sock->write(QString::number(quiz1.capacity).toUtf8());
+    sock->write(QString::number(numOfQuestions).toUtf8());
+    sock->write("#");
+    sock->write(QString::number(time).toUtf8());
+    sock->write("#");
 
     ui->connectAnswer->setEnabled(false);
     ui->undoButton->setEnabled(true);
     ui->start_game->setEnabled(true);
     ui->startButton->setEnabled(true);
+
+    count = 0;
+
+
 }
 
 /*
@@ -216,24 +226,25 @@ void Client::createQuiz(){
  * capacity stores the number of question in this quiz
  * questionTxt[] stores the text of each question
 */
-void Client::addQuestion(){
+void Client::addQuestion(){  
+        //ui->quiz->clear();
+        sendQuestion = ui->question->text();
 
-    for(int i=0; i<quiz1.capacity; i++){
-
-        quiz1.questionTxt[i] = ui->question->displayText().trimmed();
-        quiz1.answer[i] = ui->correct->displayText().trimmed();
-        ui->quiz->append(quiz1.questionTxt[0]);
-
-        ui->quiz->clear();
-        sock->write((ui->question->text().trimmed()).toUtf8());
+        sock->write(sendQuestion.toUtf8());
         sock->write("*");
         sock->write((ui->correct->text().trimmed()).toUtf8());
         sock->write("*");
+
         ui->question->clear();
         ui->correct->clear();
-    }
 
-    undoSetDisable();
+        if(count+1 >= numOfQuestions){
+            undoSetDisable();
+            count = 0;
+        }
+        else{
+          count += 1;
+        }
 }
 /*
  * Funkcja join_game dołączająca klienta do gry
@@ -247,8 +258,9 @@ void Client::joinToTheGame(){
     ui->join_game->setEnabled(false);
     ui->connectCreate->setEnabled(false);
     ui->connectAnswer->setEnabled(true);
+    ui->start_game->setEnabled(false);
 
-    //ui->quiz->append("Dołączyłeś do gry "+QString::number(code));
+    ui->quiz->append("Dołączyłeś do gry "+QString::number(code)+"\n Quiz rozpocznie się w przeciągu kilkunastu sekund.");
 
     sock->write("&");
     sock->write(QString::number(code).toUtf8());
@@ -262,6 +274,7 @@ void Client::joinToTheGame(){
  */
 void Client::startTheGame(){
 
+    ui->join_game->setEnabled(false);
     ui->quiz->clear();
     int code = ui->start_code->value();
     ui->start_game->setEnabled(false);
@@ -273,5 +286,6 @@ void Client::startTheGame(){
     sock->write("@");
     sock->write(QString::number(code).toUtf8());
     ui->startButton->setEnabled(false);
+    ui->quiz->append("Poczekaj aż się zakończy quiz zanim zrobisz coś innego.");
     dataReceived();
 }

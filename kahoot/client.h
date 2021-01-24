@@ -19,13 +19,6 @@ public:
     explicit Client(QWidget *parent = 0);
     ~Client();
 
-    struct Quiz
-    {
-        int AccessCode;
-        QString questionTxt[10];
-        QString answer[10];
-        int capacity;
-    }quiz1;
 
 void sendBtnHit();
 void dataReceived();
@@ -35,9 +28,10 @@ protected:
     QTcpSocket *sock;
     QTimer * connTimeoutTimer;
     QTextStream os(QTcpSocket sock);
+    int numOfQuestions=0, code=0, count=0, time=0;
+    QString sendQuestion;
 
     void connectBtnHit();
-
     void socketConnected();
     void socketDisconnected();
     void socketError(QTcpSocket::SocketError);
