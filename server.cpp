@@ -581,6 +581,7 @@ void recive(int clientFd) {
     }
     //----------- if create a new quiz button was clicked -----------//
     else if (sign == '#') {
+      //block ability to creating for different clients to avoid mixed two or more new quizes  
       mtxCreate.lock();
 
       int znaleziono = 0;
