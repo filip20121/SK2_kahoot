@@ -41,14 +41,20 @@ void Client::undoSetDisable(){
     ui->quiz->clear();
 
 }
+void Client::onlyConnect(){
+    ui->join_game->setEnabled(false);
+    ui->connectCreate->setEnabled(false);
+    ui->connectQuestion->setEnabled(false);
+    ui->start_game->setEnabled(false);
+}
 
 void Client::connectBtnHit(){
     ui->quiz->clear();
     ui->connect->setEnabled(false);
+    ui->join_game->setEnabled(true);
+    ui->connectCreate->setEnabled(true);
     ui->connectQuestion->setEnabled(false);
-    ui->connectAnswer->setEnabled(false);
-    ui->undoButton->setEnabled(false);
-    ui->add->setEnabled(false);
+    ui->start_game->setEnabled(true);
 
     ui->quiz->append("<b>Connecting to " + ui->server->text() + ":" + ui->port->value() + "</b>");
     sock = new QTcpSocket(this);
@@ -59,7 +65,7 @@ void Client::connectBtnHit(){
             sock->abort();
             sock->deleteLater();
             connTimeoutTimer->deleteLater();
-            ui->join_game->setEnabled(true);
+            onlyConnect();
             ui->quiz->append("<b>Connect timed out</b>");
             QMessageBox::critical(this, "Error", "Connect timed out");
         });
@@ -83,7 +89,7 @@ void Client::socketConnected(){
 void Client::socketDisconnected(){
     ui->quiz->append("<b>Disconnected</b>");
     ui->connect->setEnabled(true);
-    undoSetDisable();
+    onlyConnect();
 }
 
 void Client::socketError(QTcpSocket::SocketError err){
@@ -92,7 +98,7 @@ void Client::socketError(QTcpSocket::SocketError err){
     QMessageBox::critical(this, "Error", sock->errorString());
     ui->quiz->append("<b>Socket error: "+sock->errorString()+"</b>");
     ui->connect->setEnabled(true);
-    undoSetDisable();
+    onlyConnect();
 }
 
 /*
@@ -112,6 +118,7 @@ void Client::dataReceived(){
             ui->undoButton->setEnabled(true);
             ui->quiz->append("Quiz się zakończył.\n");
             ui->quiz->setAlignment(Qt::AlignLeft);
+            ui->startButton->setEnabled(true);
 
         }
         //if code is incorrect whlie joining
@@ -136,6 +143,7 @@ void Client::dataReceived(){
      }
    else
     {
+        ui->quiz->clear();
         ui->quiz->append(QString::fromUtf8(ba).trimmed());
         ui->quiz->setAlignment(Qt::AlignLeft);
         ui->undoButton->setEnabled(true);
@@ -245,6 +253,7 @@ void Client::addQuestion(){
         else{
           count += 1;
         }
+
 }
 /*
  * Funkcja join_game dołączająca klienta do gry
@@ -259,8 +268,6 @@ void Client::joinToTheGame(){
     ui->connectCreate->setEnabled(false);
     ui->connectAnswer->setEnabled(true);
     ui->start_game->setEnabled(false);
-
-    ui->quiz->append("Dołączyłeś do gry "+QString::number(code)+"\n Quiz rozpocznie się w przeciągu kilkunastu sekund.");
 
     sock->write("&");
     sock->write(QString::number(code).toUtf8());
@@ -281,11 +288,8 @@ void Client::startTheGame(){
     ui->connectCreate->setEnabled(false);
     ui->connectAnswer->setEnabled(false);
 
-    ui->quiz->append("Rozpocząłeś quiz "+QString::number(code));
-
     sock->write("@");
     sock->write(QString::number(code).toUtf8());
     ui->startButton->setEnabled(false);
-    ui->quiz->append("Poczekaj aż się zakończy quiz zanim zrobisz coś innego.");
     dataReceived();
 }

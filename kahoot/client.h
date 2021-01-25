@@ -40,6 +40,7 @@ protected:
     void joinToTheGame();
     void undoSetDisable();
     void startTheGame();
+    void onlyConnect();
     /* TODO: Stworzyć nagłówki pozostałych funkcji obsługujących zdarzenie na gnieździe */
 
 private:
